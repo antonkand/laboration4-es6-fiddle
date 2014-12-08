@@ -7,12 +7,23 @@
 	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
 </head>
 <body>
-	<blockquote id="question-container">
-		<p></p>
-	</blockquote>
-	<ul id="correct-answers">
+<div class="container-fluid">
+	<div class="row">
 
-	</ul>
+		<blockquote id="question-container" class="col-xs-8 col-offset-4">
+			<p></p>
+		</blockquote>
+		<form class="col-xs-8 col-offset-4">
+			<label for="answer" class="">Ditt svar</label>
+			<textarea name="answerbox" id="answer" rows="3" class="form-control" autofocus>
+			</textarea>
+			<button id="submit" class="btn btn-lg btn-info pull-right">Skicka svar</button>
+		</form>
+		<ul id="correct-answers" class="col-xs-8 col-offset-4">
+
+		</ul>
+	</div>
+</div>
 <script src="lab4.js"></script>
 </body>
 </html>
