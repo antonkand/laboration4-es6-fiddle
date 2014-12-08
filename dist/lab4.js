@@ -4,7 +4,7 @@
   'use strict';
   function Quiz() {
     var $__0 = this;
-    this.postURL = 'http://vhost3.lnu.se:20080/answer/1';
+    this.postURL = '';
     this.correctAnswers = [];
     var domElements = {
       submit: document.querySelector('#submit'),
@@ -36,24 +36,31 @@
           console.log('received postURL: ' + $__0.postURL);
           updateQuestion(JSON.parse(xhr.responseText).question);
           console.log('received question: ' + JSON.parse(xhr.responseText).question);
+          console.log(xhr.responseText);
         }
       }));
       xhr.send(null);
     });
-    var post = (function() {
+    var post = (function(e, answer) {
+      e = e || event;
+      e.preventDefault();
+      var json = JSON.stringify({answer: answer});
       var xhr = XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject();
-      xhr.open('post', $__0.postURL);
-      console.log('post url: ' + $__0.postURL);
-      xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
-      xhr.onreadystatechange = (function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-          alert(xhr.responseText);
-          $__0.get('http://vhost3.lnu.se:20080/question/1');
+      xhr.addEventListener('load', (function() {
+        if (xhr.status < 400) {
+          console.log(JSON.parse(xhr.responseText).nextURL);
+          $__0.get(JSON.parse(xhr.responseText).nextURL);
+        } else {
+          console.log('post: unsuccessful post. status code ' + xhr.status);
         }
-        xhr.send(JSON.stringify({answer: 2}));
-      });
+      }));
+      xhr.open('post', $__0.postURL, true);
+      xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+      xhr.send(json);
     });
-    domElements.submit.addEventListener('click', post(), false);
+    domElements.submit.addEventListener('click', function(e) {
+      return post(e, domElements.answer.value);
+    }, false);
   }
   var run = (function() {
     return new Quiz().get('http://vhost3.lnu.se:20080/question/1');

@@ -1,7 +1,7 @@
 ;(function () {
   'use strict';
   function Quiz () {
-    this.postURL = 'http://vhost3.lnu.se:20080/answer/1';
+    this.postURL = '';
     this.correctAnswers = [];
     let domElements = {
       submit: document.querySelector('#submit'),
@@ -33,24 +33,32 @@
           console.log('received postURL: ' + this.postURL);
           updateQuestion(JSON.parse(xhr.responseText).question);
           console.log('received question: ' + JSON.parse(xhr.responseText).question);
+          console.log(xhr.responseText);
         }
       });
       xhr.send(null);
     };
-    let post = () => {
+    let post = (e, answer) => {
+      e = e || event;
+      e.preventDefault();
+      let json = JSON.stringify({answer});
       let xhr = XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject();
-      xhr.open('post', this.postURL);
-      console.log('post url: ' + this.postURL);
+      xhr.addEventListener('load', () => {
+        if (xhr.status < 400) {
+            console.log(JSON.parse(xhr.responseText).nextURL);
+            this.get(JSON.parse(xhr.responseText).nextURL);
+          }
+          else {
+            console.log('post: unsuccessful post. status code ' + xhr.status);
+          }
+      });
+      xhr.open('post', this.postURL, true);
       xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
-      xhr.onreadystatechange = () => {
-        if(xhr.readyState === 4 && xhr.status === 200) {
-          alert(xhr.responseText);
-          this.get('http://vhost3.lnu.se:20080/question/1');
-        }
-       xhr.send(JSON.stringify({ answer: 2}));
-      };
+      xhr.send(json);
     };
-    domElements.submit.addEventListener('click', post(), false);
+    domElements.submit.addEventListener('click', function (e) {
+      return post(e, domElements.answer.value);
+    }, false);
   }
   let run = () => new Quiz().get('http://vhost3.lnu.se:20080/question/1');
   window.onload = run;
