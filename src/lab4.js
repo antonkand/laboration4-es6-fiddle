@@ -6,7 +6,7 @@
   * */
   function Quiz () {
     this.postURL = ''; // contains the current url for post requests
-    this.correctAnswers = []; // used for insertion into DOM
+    this.correctAnswers = 0; // used for insertion into DOM
     this.posts = 0; // total number of times user posted an answer
     /*
     * @object domElements
@@ -16,7 +16,8 @@
       submit: document.querySelector('#submit'),
       answer: document.querySelector('#answer'),
       questionContainer: document.querySelector('#question-container'),
-      correctAnswersContainer: document.querySelector('#correct-answers')
+      correctAnswersContainer: document.querySelector('#correct-answers'),
+      errorFlash: document.querySelector('#error-flash')
     };
     /*
     * @function addCorrectAnswer
@@ -24,12 +25,36 @@
     * @param String answer
     * */
     let addCorrectAnswer = (answer) => {
-      this.correctAnswers.push(answer);
       let li = document.createElement('li');
       let p = document.createElement('p');
-      p.textContent = answer;
+      let answerParagraph = document.createElement('p');
+      p.innerHTML = '<strong>Fråga ' + this.correctAnswers + ': </strong>';
+      p.setAttribute('class', 'strong');
+      answerParagraph.textContent = answer;
       li.appendChild(p);
+      li.appendChild(answerParagraph);
       domElements.correctAnswersContainer.appendChild(li);
+    };
+    /*
+    * @function flashWrongAnswer
+    * lets user know that they answered incorrectly by updating the send button to red and flashing error message
+    * @param String answer: the wrong answer submitted by user
+    */
+    let flashWrongAnswer = (answer) => {
+      domElements.errorFlash.innerHTML = 'Oj! <strong>'+ answer +'</strong> är fel svar.';
+      domElements.answer.focus();
+    };
+    let gameOver = () => {
+      let hooray = document.createElement('h3');
+      let cheer = document.createElement('p');
+      let happyContainer = document.createElement('div');
+      happyContainer.setAttribute('class', 'alert alert-success');
+      hooray.textContent =  'Grattis! Du klarade det!';
+      cheer.textContent = 'Det tog dig ' + this.posts + ' försök för att klara ' + this.correctAnswers + ' frågor. Inte illa pinkat!';
+      happyContainer.appendChild(hooray);
+      happyContainer.appendChild(cheer);
+      domElements.questionContainer.innerHTML = '';
+      domElements.questionContainer.appendChild(happyContainer);
     };
     /*
     * @function updateQuestion
@@ -48,27 +73,15 @@
     * @param String url
     * */
     this.get = (url) => {
-      console.log('get url: ' + url);
       let xhr = XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject();
       xhr.open('get', url, false);
       xhr.addEventListener('load', () => {
         if (xhr.status < 400) {
           this.postURL = JSON.parse(xhr.responseText).nextURL; // new URL to post to, update reference
-          console.log('received postURL: ' + this.postURL);
           updateQuestion(JSON.parse(xhr.responseText).question); // new question, update DOM
-          console.log('received question: ' + JSON.parse(xhr.responseText).question);
-          console.log(xhr.responseText);
         }
       });
       xhr.send(null);
-    };
-    /*
-    * @function flashWrongAnswer
-    * lets user know that they answered incorrectly by updating the send button to red and flashing error message
-    * @param String answer: the wrong answer submitted by user
-    */
-    let flashWrongAnswer = (answer) => {
-      alert(answer + 'är fel svar.');
     };
     /*
     * @function post
@@ -83,13 +96,19 @@
       let json = JSON.stringify({answer});
       let xhr = XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject();
       xhr.addEventListener('load', () => {
-        this.posts += this.posts + 1;
+        this.posts += 1;
+        domElements.submit.setAttribute('class', 'btn btn-lg btn-info pull-right');
+        domElements.errorFlash.innerHTML = '';
         if (xhr.status < 400) {
-            console.log(JSON.parse(xhr.responseText).nextURL);
-            this.get(JSON.parse(xhr.responseText).nextURL);
-          }
+            this.correctAnswers += 1;
+            addCorrectAnswer(answer);
+            domElements.answer.value = '';
+            domElements.answer.focus();
+          JSON.parse(xhr.responseText).nextURL ?
+              this.get(JSON.parse(xhr.responseText).nextURL):
+              gameOver();
+            }
           else {
-            console.log('post: unsuccessful post. status code ' + xhr.status);
             domElements.submit.setAttribute('class', 'btn btn-lg btn-danger pull-right');
             flashWrongAnswer(answer);
           }
@@ -98,9 +117,12 @@
       xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
       xhr.send(json);
     };
-    domElements.submit.addEventListener('click', function (e) {
-      return post(e, domElements.answer.value);
-    }, false);
+    domElements.submit.addEventListener('click', (e) => {
+      if (domElements.answer.value) {
+        post(e, domElements.answer.value.trim());
+      }
+    },
+      false);
   }
   let run = () => new Quiz().get('http://vhost3.lnu.se:20080/question/1');
   window.onload = run;

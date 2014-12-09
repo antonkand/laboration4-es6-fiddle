@@ -10,16 +10,17 @@
 <div class="container-fluid">
 	<div class="row">
 
-		<blockquote id="question-container" class="col-xs-8 col-offset-4">
+		<blockquote id="question-container" class="col-xs-12">
 			<p></p>
 		</blockquote>
 		<form class="col-xs-8 col-offset-4">
 			<label for="answer" class="">Ditt svar</label>
-			<textarea name="answerbox" id="answer" rows="3" class="form-control" autofocus>
-			</textarea>
+			<p class="alert-danger" id="error-flash"></p>
+			<textarea name="answerbox" id="answer" rows="3" class="form-control" autofocus></textarea>
 			<button id="submit" class="btn btn-lg btn-info pull-right">Skicka svar</button>
 		</form>
-		<ul id="correct-answers" class="col-xs-8 col-offset-4">
+		<ul id="correct-answers" class="col-xs-4 list-unstyled">
+		<h3>Dina rätta svar</h3>
 
 		</ul>
 	</div>
